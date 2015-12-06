@@ -1,0 +1,19 @@
+NameVirtualHost *:{{ http_server_port }}
+
+<VirtualHost *:{{ http_server_port }}>
+	ServerAdmin {{ http_server_admin }}
+    ServerName {{ http_server_name }}
+	DocumentRoot {{ http_doc_root }}
+
+	<Directory {{ http_doc_root}} >
+		Options Indexes FollowSymLinks
+		AllowOverride None
+        EnableSendfile Off
+	</Directory>
+
+	Loglevel warn
+
+	ErrorLog /var/log/httpd/default_error_log
+	CustomLog /var/log/httpd/default_access_log combined
+
+</VirtualHost>

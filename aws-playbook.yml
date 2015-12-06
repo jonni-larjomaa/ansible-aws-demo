@@ -1,0 +1,79 @@
+---
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - credentials.yml
+
+  tasks:
+
+    - name: provision 2 ec2 instances
+      ec2:
+        aws_access_key: "{{ ec2_access_key }}"
+        aws_secret_key: "{{ ec2_secret_key }}"
+        key_name: ansibledemo
+        instance_type: t2.micro
+        image: ami-10e43b63
+        ec2_region: eu-west-1
+        wait: yes
+        group: default
+        exact_count: 2
+        count_tag:
+          Name: AnsibleDemo
+        instance_tags:
+          Name: AnsibleDemo
+      register: ec2
+
+    - name: gather ec2 instances to hosts groups
+      add_host: hostname={{ item.public_ip }} groups=ec2hosts
+      with_items: ec2.instances
+
+    - name: create loadbalancer
+      ec2_elb_lb:
+        aws_access_key: "{{ ec2_access_key }}"
+        aws_secret_key: "{{ ec2_secret_key }}"
+        name: "ansibledemolb"
+        region: eu-west-1
+        state: present
+        cross_az_load_balancing: "yes"
+        zones:
+          - eu-west-1a
+          - eu-west-1b
+          - eu-west-1c
+        listeners:
+          - protocol: http
+            load_balancer_port: 80
+            instance_port: 80
+      register: elb
+
+    - name: attach instances to loadbalancer
+      ec2_elb:
+        aws_access_key: "{{ ec2_access_key }}"
+        aws_secret_key: "{{ ec2_secret_key }}"
+        ec2_elbs: "ansibledemolb"
+        state: present
+        region: eu-west-1
+        wait: no
+        instance_id: "{{ item.id }}"
+      with_items: ec2.instances
+
+    - name: pause for while
+      pause: seconds=120
+
+- hosts: ec2hosts:tag_Name_AnsibleDemo
+  name: ansibleplay
+  remote_user: ec2-user
+  sudo: true
+  gather_facts: true
+  roles:
+    - php
+    - webserver
+
+  tasks:
+
+    - name: phpinfo
+      shell: echo '<?php phpinfo(); ?>' >> /var/www/html/info.php creates=/var/www/html/info.php
+
+
+

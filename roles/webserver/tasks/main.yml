@@ -1,0 +1,12 @@
+- name: install apache
+  yum: pkg=httpd state=installed
+
+- name: setup virtualhosts
+  template: src={{ http_server_config_template }} dest=/etc/httpd/conf.d/{{ httpd_server_config_name }}
+            group=root owner=root mode=0644
+  notify:
+    - enable httpd
+    - restart httpd
+
+- name: copy dummy index-file
+  copy: src=index.html dest=/var/www/html group=root owner=root mode=0644
