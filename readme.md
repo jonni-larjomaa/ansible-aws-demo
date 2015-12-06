@@ -13,11 +13,12 @@ Ansible aws example
     1. pip install ansible
     2. pip install boto
     3. create credentials file called credentials.yml to include AWS keys
-    ```yaml
-        ---
-        ec2_access_key: "--REMOVED--"
-        ec2_secret_key: "--REMOVED--"
-    ```
+    
+```yaml
+    ---
+    ec2_access_key: "--REMOVED--"
+    ec2_secret_key: "--REMOVED--"
+```
     
 ## dynamic inventory setup
 
@@ -27,7 +28,7 @@ http://docs.ansible.com/ansible/intro_dynamic_inventory.html#example-aws-ec2-ext
 
 with static hosts file use:
 
-`ansible-playbook -i ec2.py aws-playbook.yml`
+`ansible-playbook -i hosts aws-playbook.yml`
 
 With dynamic inventory use:
 
